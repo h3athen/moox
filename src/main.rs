@@ -6,6 +6,7 @@ use eframe::{egui, NativeOptions};
 use crate::gui::Moox;
 
 fn main() {
+    //// Set App height and width
     let options = NativeOptions {
         viewport: egui::ViewportBuilder::default().with_inner_size([1250.0, 650.0]),
         ..Default::default()
@@ -15,6 +16,7 @@ fn main() {
         theme: Default::default()
     };
 
+    //// App run
     if let Err(e) = eframe::run_native(
         "Moox",
         options,
