@@ -8,13 +8,11 @@ use crate::gui::Moox;
 fn main() {
     //// Set App height and width
     let options = NativeOptions {
-        viewport: egui::ViewportBuilder::default().with_inner_size([1250.0, 650.0]),
+        viewport: egui::ViewportBuilder::default().with_inner_size([1200.0, 700.0]),
         ..Default::default()
     };
 
-    let app = Moox {
-        theme: Default::default()
-    };
+    let app = <Moox as std::default::Default>::default();
 
     //// App run
     if let Err(e) = eframe::run_native(
