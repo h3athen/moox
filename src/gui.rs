@@ -1,21 +1,19 @@
-
-
 use eframe::{egui, App, Frame};
-use catppuccin_egui::{LATTE, MOCHA};
+// use catppuccin_egui::{LATTE, MOCHA};
 use eframe::egui::global_theme_preference_switch;
 
 #[derive(Default)]
 pub struct Moox {
-    pub(crate) theme: ThemeChoice,
+    // pub(crate) theme: ThemeChoice,
     code: String,
 }
 
-#[derive(Default, Debug, PartialEq)]
-pub enum ThemeChoice {
-    #[default]
-    Dark,
-    Light
-}
+// #[derive(Default, Debug, PartialEq)]
+// pub enum ThemeChoice {
+//     #[default]
+//     Dark,
+//     Light
+// }
 
 impl App for Moox {
     fn update(&mut self, ctx: &egui::Context, _frame: &mut Frame) {
@@ -84,8 +82,43 @@ impl App for Moox {
             });
         });
 
+        //// Footer Panel
         egui::TopBottomPanel::bottom("footer").show(ctx, |ui| {
-            ui.label("footer")
+            // count number of character excluding whitespace
+            let charcount = self.code
+                .chars()
+                .filter(|c| !c.is_whitespace())
+                .count()
+                .to_string();
+
+            // count number of words
+            let wordcount = self.code
+                .split_whitespace()
+                .count()
+                .to_string();
+
+            // count number of lines
+            let linecount = self.code
+                .lines()
+                .count()
+                .to_string();
+
+            ui.columns(2, |columns| {
+                columns[1].with_layout(egui::Layout::right_to_left(egui::Align::TOP), |ui| {
+                    ui.label(linecount);
+                    ui.label("lin: ");
+
+                    ui.separator();
+
+                    ui.label(wordcount);
+                    ui.label("wrd: ");
+
+                    ui.separator();
+
+                    ui.label(charcount);
+                    ui.label("chr: ");
+                });
+            });
         });
     }
 }

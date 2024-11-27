@@ -12,11 +12,11 @@ fn main() {
         ..Default::default()
     };
 
-    let app = <Moox as std::default::Default>::default();
+    let app = <Moox as Default>::default();
 
     //// App run
     if let Err(e) = eframe::run_native(
-        "Moox",
+        "MooX",
         options,
         Box::new(|_|{
             Ok(Box::new(app))
