@@ -1,5 +1,5 @@
 use crate::gui::Moox;
-use eframe::egui;
+use eframe::egui::{self, RichText};
 use std::fs;
 
 /*
@@ -9,7 +9,11 @@ pub fn build_menu(app: &mut Moox, ctx: &egui::Context) {
     egui::TopBottomPanel::top("menu").show(ctx, |ui| {
         egui::menu::bar(ui, |ui| {
             ui.menu_button("File", |ui| file_menu(app, ui));
+            if !app.is_saved {
+                ui.label(RichText::new("*").strong());
+            }
             ui.menu_button("App", |ui| app_menu(ui));
+
             theme_switcher(ui);
         });
     });
@@ -20,6 +24,9 @@ fn file_menu(app: &mut Moox, ui: &mut egui::Ui) {
 
     //// Open pre existing file
     if ui.button("Open...").clicked() {
+
+        app.mark_saved();
+
         if let Some(path) = rfd::FileDialog::new().pick_file() {
             match fs::read_to_string(&path) {
                 Ok(contents) => {
@@ -33,6 +40,9 @@ fn file_menu(app: &mut Moox, ui: &mut egui::Ui) {
 
     //// Save buffer of file if already exists or create new file
     if ui.button("Save").clicked() {
+
+        app.mark_saved();
+
         if let Some(path) = &app.current_file {
             if let Err(err) = fs::write(path, &app.code) {
                 eprintln!("Failed to save file: {}", err);
