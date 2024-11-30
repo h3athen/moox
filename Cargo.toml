@@ -4,6 +4,7 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
+rfd = "0.15.1"
 eframe = "0.29.1"
 egui_extras = "0.29.1"
-catppuccin-egui = { version = "5.3.1", default-features = false, features = ["egui29"] }
+# catppuccin-egui = { version = "5.3.1", default-features = false, features = ["egui29"] }

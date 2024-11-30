@@ -16,7 +16,7 @@ fn main() {
 
     //// App run
     if let Err(e) = eframe::run_native(
-        "MooX",
+        "Moox",
         options,
         Box::new(|_|{
             Ok(Box::new(app))
