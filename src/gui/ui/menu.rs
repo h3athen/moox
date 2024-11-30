@@ -15,7 +15,10 @@ pub fn build_menu(app: &mut Moox, ctx: &egui::Context) {
     });
 }
 
+//// File Menu
 fn file_menu(app: &mut Moox, ui: &mut egui::Ui) {
+
+    //// Open pre existing file
     if ui.button("Open...").clicked() {
         if let Some(path) = rfd::FileDialog::new().pick_file() {
             match fs::read_to_string(&path) {
@@ -28,6 +31,7 @@ fn file_menu(app: &mut Moox, ui: &mut egui::Ui) {
         }
     }
 
+    //// Save buffer of file if already exists or create new file
     if ui.button("Save").clicked() {
         if let Some(path) = &app.current_file {
             if let Err(err) = fs::write(path, &app.code) {
@@ -43,12 +47,14 @@ fn file_menu(app: &mut Moox, ui: &mut egui::Ui) {
     }
 }
 
+//// App Menu
 fn app_menu(ui: &mut egui::Ui) {
     if ui.button("Quit").clicked() {
         std::process::exit(0);
     }
 }
 
+//// Theme Menu
 fn theme_switcher(ui: &mut egui::Ui) {
     ui.columns(2, |columns| {
         columns[1].with_layout(egui::Layout::right_to_left(egui::Align::TOP), |ui| {
