@@ -44,18 +44,7 @@ fn file_menu(app: &mut Moox, ui: &mut egui::Ui) {
     if ui.button("Save").clicked() {
 
         app.mark_saved();
-
-        if let Some(path) = &app.current_file {
-            if let Err(err) = fs::write(path, &app.code) {
-                eprintln!("Failed to save file: {}", err);
-            }
-        } else if let Some(path) = rfd::FileDialog::new().save_file() {
-            if let Err(err) = fs::write(&path, &app.code) {
-                eprintln!("Failed to save file: {}", err);
-            } else {
-                app.current_file = Some(path);
-            }
-        }
+        save_file(app);
     }
 }
 
@@ -74,4 +63,18 @@ fn theme_switcher(ui: &mut egui::Ui) {
             ui.separator();
         })
     });
+}
+
+pub fn save_file(app: &mut Moox) {
+    if let Some(path) = &app.current_file {
+        if let Err(err) = fs::write(path, &app.code) {
+            eprintln!("Failed to save file: {}", err);
+        }
+    } else if let Some(path) = rfd::FileDialog::new().save_file() {
+        if let Err(err) = fs::write(&path, &app.code) {
+            eprintln!("Failed to save file: {}", err);
+        } else {
+            app.current_file = Some(path);
+        }
+    }
 }

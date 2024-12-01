@@ -1,5 +1,5 @@
 use crate::gui::Moox;
-use eframe::egui;
+use eframe::egui::{self, RichText};
 
 pub fn build_footer(app: &mut Moox, ctx: &egui::Context) {
     // Count number of characters
@@ -44,12 +44,14 @@ fn display_file_name(app: &mut Moox, ui: &mut egui::Ui) {
     .unwrap_or_else(|| "Untitled".to_string());
 
     let file_name_with_indicator = if app.is_saved {
-        file_name
+        RichText::new(file_name)
     } else {
-        format!("{}*",file_name)
+        RichText::new(format!("{}*",file_name))
+            .strong()
     };
 
     ui.horizontal(|ui|{
+        ui.label("File: ");
         ui.label(file_name_with_indicator);
     });
 }
