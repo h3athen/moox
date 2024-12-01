@@ -1,5 +1,5 @@
 use crate::gui::Moox;
-use eframe::egui::{self, RichText};
+use eframe::egui::{self};
 use std::fs;
 
 /*
@@ -9,9 +9,11 @@ pub fn build_menu(app: &mut Moox, ctx: &egui::Context) {
     egui::TopBottomPanel::top("menu").show(ctx, |ui| {
         egui::menu::bar(ui, |ui| {
             ui.menu_button("File", |ui| file_menu(app, ui));
-            if !app.is_saved {
-                ui.label(RichText::new("*").strong());
-            }
+
+            // if !app.is_saved {
+            //     ui.label(RichText::new("*").strong());
+            // }
+
             ui.menu_button("App", |ui| app_menu(ui));
 
             theme_switcher(ui);
@@ -22,7 +24,7 @@ pub fn build_menu(app: &mut Moox, ctx: &egui::Context) {
 //// File Menu
 fn file_menu(app: &mut Moox, ui: &mut egui::Ui) {
 
-    //// Open pre existing file
+    //// Open existing file to buffer
     if ui.button("Open...").clicked() {
 
         app.mark_saved();
