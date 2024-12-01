@@ -30,26 +30,8 @@ pub fn build_footer(app: &mut Moox, ctx: &egui::Context) {
         egui::menu::bar(ui, |ui| {
             display_file_name(app, ui);
 
-            ui.columns(2, |columns| {
-                columns[1].with_layout(egui::Layout::right_to_left(egui::Align::TOP), |ui| {
-    
-                    ui.label(line_count);
-                    ui.label("lin: ");
-                    ui.separator();
-    
-                    ui.label(word_count);
-                    ui.label("wrd: ");
-                    ui.separator();
-    
-                    ui.label(char_count);
-                    ui.label("chr: ");
-                });
-            });
+            display_counts(line_count, word_count, char_count, ui);
         });
-
-        // display_file_name(app, ui);
-
-        
     });
 }
 
@@ -69,5 +51,23 @@ fn display_file_name(app: &mut Moox, ui: &mut egui::Ui) {
 
     ui.horizontal(|ui|{
         ui.label(file_name_with_indicator);
+    });
+}
+
+fn display_counts(line_count: String, word_count: String, char_count: String, ui: &mut egui::Ui) {
+    ui.columns(2, |columns| {
+        columns[1].with_layout(egui::Layout::right_to_left(egui::Align::TOP), |ui| {
+
+            ui.label(line_count);
+            ui.label("lin: ");
+            ui.separator();
+
+            ui.label(word_count);
+            ui.label("wrd: ");
+            ui.separator();
+
+            ui.label(char_count);
+            ui.label("chr: ");
+        });
     });
 }
