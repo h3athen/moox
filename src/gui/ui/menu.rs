@@ -23,17 +23,27 @@ pub fn build_menu(app: &mut Moox, ctx: &egui::Context) {
 
 //// File Menu
 fn file_menu(app: &mut Moox, ui: &mut egui::Ui) {
+    let open_shortcut = egui::KeyboardShortcut::new(egui::Modifiers::CTRL, egui::Key::O);
+    let save_shortcut = egui::KeyboardShortcut::new(egui::Modifiers::CTRL, egui::Key::S);
 
     //// Open existing file to buffer
-    if ui.button("Open...").clicked() {
-
+    if ui
+        .add( 
+            egui::Button::new("Open")
+                .shortcut_text(ui.ctx().format_shortcut(&open_shortcut)),
+        )
+        .clicked() {
         app.mark_saved();
         open_file(app);
     }
 
     //// Save buffer of file if already exists or create new file
-    if ui.button("Save").clicked() {
-
+    if ui
+        .add( 
+            egui::Button::new("Save")
+                .shortcut_text(ui.ctx().format_shortcut(&save_shortcut)),
+        )
+        .clicked() {
         app.mark_saved();
         save_file(app);
     }
