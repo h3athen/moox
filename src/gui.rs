@@ -24,6 +24,8 @@ impl App for Moox {
     fn update(&mut self, ctx: &egui::Context, _frame: &mut Frame) {
         //// Set App font size
         ctx.set_pixels_per_point(1.15);
+
+        // Keybind for Save File 
         if ctx.input(|i| i.key_pressed(egui::Key::S) && i.modifiers.matches_logically(egui::Modifiers::CTRL)) {
             if self.current_file.is_some() {
                 menu::save_file(self);
@@ -32,6 +34,12 @@ impl App for Moox {
                 menu::save_file(self);
                 self.mark_saved();
             }
+        }
+
+        // Keybind for Open File
+        if ctx.input(|i| i.key_pressed(egui::Key::O) && i.modifiers.matches_logically(egui::Modifiers::CTRL)) {
+            menu::open_file(self);
+            self.mark_saved();
         }
 
         //// Call UI components

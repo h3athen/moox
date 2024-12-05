@@ -28,16 +28,7 @@ fn file_menu(app: &mut Moox, ui: &mut egui::Ui) {
     if ui.button("Open...").clicked() {
 
         app.mark_saved();
-
-        if let Some(path) = rfd::FileDialog::new().pick_file() {
-            match fs::read_to_string(&path) {
-                Ok(contents) => {
-                    app.code = contents;
-                    app.current_file = Some(path);
-                }
-                Err(err) => eprintln!("Failed to read file: {}", err),
-            }
-        }
+        open_file(app);
     }
 
     //// Save buffer of file if already exists or create new file
@@ -75,6 +66,18 @@ pub fn save_file(app: &mut Moox) {
             eprintln!("Failed to save file: {}", err);
         } else {
             app.current_file = Some(path);
+        }
+    }
+}
+
+pub fn open_file(app: &mut Moox) {
+    if let Some(path) = rfd::FileDialog::new().pick_file() {
+        match fs::read_to_string(&path) {
+            Ok(contents) => {
+                app.code = contents;
+                app.current_file = Some(path);
+            }
+            Err(err) => eprintln!("Failed to read file: {}", err),
         }
     }
 }
