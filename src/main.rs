@@ -5,10 +5,18 @@ use eframe::{egui, NativeOptions};
 
 use crate::gui::Moox;
 
+// use image;
+
 fn main() {
     //// Set App height and width
     let options = NativeOptions {
         viewport: egui::ViewportBuilder::default().with_inner_size([1200.0, 700.0]),
+        // TODO: Add app logo
+            // .with_icon(std::sync::Arc::new(egui::IconData { 
+            //     rgba: image::load_from_memory(include_bytes!("../images/ferris.png")), 
+            //     width: 384, 
+            //     height: 384,
+            // })),
         ..Default::default()
     };
 
