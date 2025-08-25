@@ -7,5 +7,5 @@ edition = "2021"
 rfd = "0.15.1"
 eframe = "0.29.1"
 egui_extras = "0.29.1"
-# image = "0.25.6"
+image = "0.25.6"
 # catppuccin-egui = { version = "5.3.1", default-features = false, features = ["egui29"] }
