@@ -4,9 +4,12 @@ use eframe::{egui, App, Frame};
 use std::path::PathBuf;
 use ui::menu;
 
+const MAX_RECENT_FILES: usize = 12;
+
 pub struct Moox {
     code: String,
     current_file: Option<PathBuf>,
+    recent_files: Vec<PathBuf>,
     is_saved: bool,
     ui_initialized: bool,
     line_count: usize,
@@ -22,6 +25,7 @@ impl Default for Moox {
         let mut app = Self {
             code: String::new(),
             current_file: None,
+            recent_files: Vec::new(),
             is_saved: true,
             ui_initialized: false,
             line_count: 1,
@@ -31,7 +35,10 @@ impl Default for Moox {
             stats_dirty: false,
             last_stats_refresh_time: 0.0,
         };
-        app.refresh_cached_text_data();
+        app.load_session();
+        if app.line_numbers_cache.is_empty() {
+            app.refresh_cached_text_data();
+        }
         app
     }
 }
@@ -193,6 +200,131 @@ fn apply_glass_theme(ctx: &egui::Context) {
 }
 
 impl Moox {
+    fn session_file_path() -> PathBuf {
+        #[cfg(target_os = "windows")]
+        {
+            if let Some(appdata) = std::env::var_os("APPDATA") {
+                return PathBuf::from(appdata).join("moox").join("session-v1.txt");
+            }
+        }
+        #[cfg(not(target_os = "windows"))]
+        {
+            if let Some(xdg) = std::env::var_os("XDG_CONFIG_HOME") {
+                return PathBuf::from(xdg).join("moox").join("session-v1.txt");
+            }
+            if let Some(home) = std::env::var_os("HOME") {
+                return PathBuf::from(home)
+                    .join(".config")
+                    .join("moox")
+                    .join("session-v1.txt");
+            }
+        }
+
+        std::env::temp_dir().join("moox").join("session-v1.txt")
+    }
+
+    fn push_recent_file(&mut self, path: PathBuf) {
+        self.recent_files.retain(|p| p != &path);
+        self.recent_files.insert(0, path);
+        if self.recent_files.len() > MAX_RECENT_FILES {
+            self.recent_files.truncate(MAX_RECENT_FILES);
+        }
+    }
+
+    pub(crate) fn open_path(&mut self, path: PathBuf) -> bool {
+        match std::fs::read_to_string(&path) {
+            Ok(contents) => {
+                self.code = contents;
+                self.current_file = Some(path.clone());
+                self.is_saved = true;
+                self.refresh_cached_text_data();
+                self.push_recent_file(path);
+                self.persist_session();
+                true
+            }
+            Err(err) => {
+                eprintln!("Failed to read file: {}", err);
+                self.recent_files.retain(|p| p != &path);
+                self.persist_session();
+                false
+            }
+        }
+    }
+
+    pub(crate) fn remember_saved_path(&mut self, path: PathBuf) {
+        self.current_file = Some(path.clone());
+        self.push_recent_file(path);
+        self.persist_session();
+    }
+
+    pub(crate) fn recent_files(&self) -> &[PathBuf] {
+        &self.recent_files
+    }
+
+    pub(crate) fn clear_recent_files(&mut self) {
+        self.recent_files.clear();
+        self.persist_session();
+    }
+
+    pub(crate) fn persist_session(&self) {
+        let session_path = Self::session_file_path();
+        if let Some(parent) = session_path.parent() {
+            if std::fs::create_dir_all(parent).is_err() {
+                return;
+            }
+        }
+
+        let mut content = String::new();
+        if let Some(path) = &self.current_file {
+            content.push_str("CURRENT\t");
+            content.push_str(&path.to_string_lossy());
+            content.push('\n');
+        }
+
+        for path in &self.recent_files {
+            content.push_str("RECENT\t");
+            content.push_str(&path.to_string_lossy());
+            content.push('\n');
+        }
+
+        let _ = std::fs::write(session_path, content);
+    }
+
+    fn load_session(&mut self) {
+        let session_path = Self::session_file_path();
+        let Ok(content) = std::fs::read_to_string(session_path) else {
+            return;
+        };
+
+        let mut restored_current: Option<PathBuf> = None;
+        let mut restored_recent: Vec<PathBuf> = Vec::new();
+
+        for line in content.lines() {
+            if let Some(raw) = line.strip_prefix("CURRENT\t") {
+                let p = PathBuf::from(raw);
+                if p.exists() {
+                    restored_current = Some(p);
+                }
+                continue;
+            }
+
+            if let Some(raw) = line.strip_prefix("RECENT\t") {
+                let p = PathBuf::from(raw);
+                if p.exists() {
+                    restored_recent.push(p);
+                }
+            }
+        }
+
+        for path in restored_recent {
+            self.push_recent_file(path);
+        }
+
+        if let Some(path) = restored_current {
+            let _ = self.open_path(path);
+        }
+    }
+
     fn refresh_line_number_cache(&mut self) {
         let new_line_count = self.code.bytes().filter(|&b| b == b'\n').count() + 1;
         if new_line_count == self.line_count && !self.line_numbers_cache.is_empty() {

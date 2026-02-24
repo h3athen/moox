@@ -36,6 +36,10 @@ fn file_menu(app: &mut Moox, ui: &mut egui::Ui) {
         open_file(app);
     }
 
+    ui.menu_button("Open Recent", |ui| {
+        open_recent_menu(app, ui);
+    });
+
     //// Save buffer of file if already exists or create new file
     if ui
         .add( 
@@ -46,6 +50,38 @@ fn file_menu(app: &mut Moox, ui: &mut egui::Ui) {
         if save_file(app) {
             app.mark_saved();
         }
+    }
+}
+
+fn open_recent_menu(app: &mut Moox, ui: &mut egui::Ui) {
+    if app.recent_files().is_empty() {
+        ui.label("No recent files");
+        return;
+    }
+
+    let items = app.recent_files().to_vec();
+    for path in items {
+        let label = path
+            .file_name()
+            .and_then(|name| name.to_str())
+            .unwrap_or("[invalid file name]")
+            .to_string();
+
+        let clicked = ui
+            .button(label)
+            .on_hover_text(path.display().to_string())
+            .clicked();
+
+        if clicked {
+            let _ = app.open_path(path);
+            ui.close_menu();
+        }
+    }
+
+    ui.separator();
+    if ui.button("Clear Recent").clicked() {
+        app.clear_recent_files();
+        ui.close_menu();
     }
 }
 
@@ -72,6 +108,7 @@ pub fn save_file(app: &mut Moox) -> bool {
             eprintln!("Failed to save file: {}", err);
             false
         } else {
+            app.remember_saved_path(path.clone());
             true
         }
     } else if let Some(path) = rfd::FileDialog::new().save_file() {
@@ -79,7 +116,7 @@ pub fn save_file(app: &mut Moox) -> bool {
             eprintln!("Failed to save file: {}", err);
             false
         } else {
-            app.current_file = Some(path);
+            app.remember_saved_path(path);
             true
         }
     } else {
@@ -89,19 +126,7 @@ pub fn save_file(app: &mut Moox) -> bool {
 
 pub fn open_file(app: &mut Moox) -> bool {
     if let Some(path) = rfd::FileDialog::new().pick_file() {
-        match fs::read_to_string(&path) {
-            Ok(contents) => {
-                app.code = contents;
-                app.current_file = Some(path);
-                app.refresh_cached_text_data();
-                app.mark_saved();
-                true
-            }
-            Err(err) => {
-                eprintln!("Failed to read file: {}", err);
-                false
-            }
-        }
+        app.open_path(path)
     } else {
         false
     }
