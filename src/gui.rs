@@ -8,32 +8,45 @@ pub struct Moox {
     code: String,
     current_file: Option<PathBuf>,
     is_saved: bool,
+    ui_initialized: bool,
+    line_count: usize,
+    word_count: usize,
+    char_count: usize,
+    line_numbers_cache: String,
+    stats_dirty: bool,
+    last_stats_refresh_time: f64,
 }
 
 impl Default for Moox {
     fn default() -> Self {
-        Self {
+        let mut app = Self {
             code: String::new(),
             current_file: None,
             is_saved: true,
-        }
+            ui_initialized: false,
+            line_count: 1,
+            word_count: 0,
+            char_count: 0,
+            line_numbers_cache: String::new(),
+            stats_dirty: false,
+            last_stats_refresh_time: 0.0,
+        };
+        app.refresh_cached_text_data();
+        app
     }
 }
 
 impl App for Moox {
     fn update(&mut self, ctx: &egui::Context, _frame: &mut Frame) {
-        //// Set App font size
-        ctx.set_pixels_per_point(1.2);
+        if !self.ui_initialized {
+            ctx.set_pixels_per_point(1.25);
+            apply_glass_theme(ctx);
+            self.ui_initialized = true;
+        }
 
-        apply_glass_theme(ctx);
-
-        // Keybind for Save File 
+        // Keybind for Save File
         if ctx.input(|i| i.key_pressed(egui::Key::S) && i.modifiers.matches_logically(egui::Modifiers::CTRL)) {
-            if self.current_file.is_some() {
-                menu::save_file(self);
-                self.mark_saved();
-            } else {
-                menu::save_file(self);
+            if menu::save_file(self) {
                 self.mark_saved();
             }
         }
@@ -41,15 +54,15 @@ impl App for Moox {
         // Keybind for Open File
         if ctx.input(|i| i.key_pressed(egui::Key::O) && i.modifiers.matches_logically(egui::Modifiers::CTRL)) {
             menu::open_file(self);
-            self.mark_saved();
         }
+
+        self.refresh_stats_if_due(ctx);
 
         //// Call UI components
         ui::menu::build_menu(self, ctx);
         ui::footer::build_footer(self, ctx);
         ui::editor::build_editor(self, ctx);
 
-        self.check_unsaved_changes();
     }
 }
 
@@ -114,28 +127,53 @@ fn apply_glass_theme(ctx: &egui::Context) {
 }
 
 impl Moox {
-    /// Mark the buffer as unsaved if there are changes
-    fn check_unsaved_changes(&mut self) {
-        // You could use a more sophisticated check like hashing for large files
-        if !self.is_saved {
-            return; // Already marked as unsaved
+    fn refresh_line_number_cache(&mut self) {
+        let new_line_count = self.code.bytes().filter(|&b| b == b'\n').count() + 1;
+        if new_line_count == self.line_count && !self.line_numbers_cache.is_empty() {
+            return;
         }
-        if let Some(path) = &self.current_file {
-            // Compare the file's content with the buffer
-            if let Ok(content) = std::fs::read_to_string(path) {
-                self.is_saved = content == self.code;
-            }
+
+        self.line_count = new_line_count;
+        let digits = self.line_count.to_string().len().max(2);
+        self.line_numbers_cache = (1..=self.line_count)
+            .map(|n| format!("{:>width$}", n, width = digits))
+            .collect::<Vec<_>>()
+            .join("\n");
+    }
+
+    fn refresh_footer_stats(&mut self) {
+        self.word_count = self.code.split_whitespace().count();
+        self.char_count = self.code.chars().filter(|c| !c.is_whitespace()).count();
+        self.stats_dirty = false;
+    }
+
+    fn refresh_stats_if_due(&mut self, ctx: &egui::Context) {
+        if !self.stats_dirty {
+            return;
+        }
+
+        let now = ctx.input(|i| i.time);
+        if now - self.last_stats_refresh_time >= 0.08 {
+            self.refresh_footer_stats();
+            self.last_stats_refresh_time = now;
         } else {
-            // No file associated means unsaved changes
-            self.is_saved = false;
+            ctx.request_repaint_after(std::time::Duration::from_millis(16));
         }
+    }
+
+    pub(crate) fn refresh_cached_text_data(&mut self) {
+        self.refresh_line_number_cache();
+        self.refresh_footer_stats();
+        self.last_stats_refresh_time = 0.0;
+    }
+
+    pub(crate) fn mark_unsaved_with_refresh(&mut self) {
+        self.is_saved = false;
+        self.refresh_line_number_cache();
+        self.stats_dirty = true;
     }
 
     pub fn mark_saved(&mut self) {
         self.is_saved = true;
-    }
-
-    pub fn mark_unsaved(&mut self) {
-        self.is_saved = false;
     }
 }

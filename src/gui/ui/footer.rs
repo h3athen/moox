@@ -2,27 +2,9 @@ use crate::gui::Moox;
 use eframe::egui::{self, RichText};
 
 pub fn build_footer(app: &mut Moox, ctx: &egui::Context) {
-    // Count number of characters
-    let char_count = app
-        .code
-        .chars()
-        .filter(|c| !c.is_whitespace())
-        .count()
-        .to_string();
-
-    // Count number of words
-    let word_count = app
-        .code
-        .split_whitespace()
-        .count()
-        .to_string();
-
-    // Count number of lines
-    let line_count = app
-        .code
-        .lines()
-        .count()
-        .to_string();
+    let char_count = app.char_count.to_string();
+    let word_count = app.word_count.to_string();
+    let line_count = app.line_count.to_string();
 
     //// Display the counts: character, word, line
     egui::TopBottomPanel::bottom("footer")

@@ -33,7 +33,6 @@ fn file_menu(app: &mut Moox, ui: &mut egui::Ui) {
                 .shortcut_text(ui.ctx().format_shortcut(&open_shortcut)),
         )
         .clicked() {
-        app.mark_saved();
         open_file(app);
     }
 
@@ -44,8 +43,9 @@ fn file_menu(app: &mut Moox, ui: &mut egui::Ui) {
                 .shortcut_text(ui.ctx().format_shortcut(&save_shortcut)),
         )
         .clicked() {
-        app.mark_saved();
-        save_file(app);
+        if save_file(app) {
+            app.mark_saved();
+        }
     }
 }
 
@@ -66,28 +66,43 @@ fn theme_switcher(ui: &mut egui::Ui) {
     });
 }
 
-pub fn save_file(app: &mut Moox) {
+pub fn save_file(app: &mut Moox) -> bool {
     if let Some(path) = &app.current_file {
         if let Err(err) = fs::write(path, &app.code) {
             eprintln!("Failed to save file: {}", err);
+            false
+        } else {
+            true
         }
     } else if let Some(path) = rfd::FileDialog::new().save_file() {
         if let Err(err) = fs::write(&path, &app.code) {
             eprintln!("Failed to save file: {}", err);
+            false
         } else {
             app.current_file = Some(path);
+            true
         }
+    } else {
+        false
     }
 }
 
-pub fn open_file(app: &mut Moox) {
+pub fn open_file(app: &mut Moox) -> bool {
     if let Some(path) = rfd::FileDialog::new().pick_file() {
         match fs::read_to_string(&path) {
             Ok(contents) => {
                 app.code = contents;
                 app.current_file = Some(path);
+                app.refresh_cached_text_data();
+                app.mark_saved();
+                true
             }
-            Err(err) => eprintln!("Failed to read file: {}", err),
+            Err(err) => {
+                eprintln!("Failed to read file: {}", err);
+                false
+            }
         }
+    } else {
+        false
     }
 }
