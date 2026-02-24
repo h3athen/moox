@@ -25,7 +25,10 @@ pub fn build_footer(app: &mut Moox, ctx: &egui::Context) {
         .to_string();
 
     //// Display the counts: character, word, line
-    egui::TopBottomPanel::bottom("footer").show(ctx, |ui| {
+    egui::TopBottomPanel::bottom("footer")
+        .resizable(false)
+        .exact_height(24.0)
+        .show(ctx, |ui| {
 
         egui::menu::bar(ui, |ui| {
             display_file_name(app, ui);

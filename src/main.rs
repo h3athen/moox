@@ -22,6 +22,7 @@ fn main() {
     let options = NativeOptions {
         viewport: egui::ViewportBuilder::default()
             .with_inner_size([1200.0, 700.0])
+            .with_transparent(true)
             .with_icon(icon),
         ..Default::default()
     };

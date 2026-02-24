@@ -2,28 +2,33 @@ use crate::gui::Moox;
 use eframe::egui;
 
 pub fn build_editor(app: &mut Moox, ctx: &egui::Context) {
-    egui::CentralPanel::default().show(ctx, |ui| {  
+    egui::CentralPanel::default().show(ctx, |ui| {
         egui::ScrollArea::vertical().show(ui, |ui| {
-            ui.horizontal(|ui| {
-                // Calculate font_id and row_height before the closure to avoid double borrowing
+            ui.horizontal_top(|ui| {
+                // Keep gutter and editor in sync by using the same font metrics.
                 let font_id = egui::TextStyle::Monospace.resolve(ui.style());
-                let row_height = ui.fonts(|f| f.row_height(&font_id));
-                let col_width = 28.0;
-                ui.vertical(|ui_nums| {
-                    ui_nums.spacing_mut().item_spacing.y = 0.0;
-                    ui_nums.set_width(col_width);
+                let line_count = app.code.split('\n').count().max(1);
+                let gutter_digits = line_count.to_string().len().max(2);
+                let glyph_width = ui.fonts(|f| f.glyph_width(&font_id, '8'));
+                let col_width = (gutter_digits as f32 * glyph_width + 14.0).max(30.0);
+                let weak_text_color = ui.visuals().weak_text_color();
+                let mut line_numbers = (1..=line_count)
+                    .map(|n| format!("{:>width$}", n, width = gutter_digits))
+                    .collect::<Vec<_>>()
+                    .join("\n");
 
-                    let line_count = app.code.split('\n').count().max(1);
-                    for n in 1..=line_count {
-                        let txt = egui::RichText::new(format!("{:>2}", n)).font(font_id.clone()).weak();
-                        ui_nums.allocate_ui_with_layout(
-                            egui::vec2(col_width, row_height),
-                            egui::Layout::right_to_left(egui::Align::Center),
-                            |ui| {
-                                ui.label(txt.clone());
-                            },
-                        );
-                    }
+                ui.scope(|ui_nums| {
+                    ui_nums.set_width(col_width);
+                    ui_nums.add(
+                        egui::TextEdit::multiline(&mut line_numbers)
+                            .desired_width(col_width)
+                            .desired_rows(35)
+                            .frame(false)
+                            .interactive(false)
+                            .text_color(weak_text_color)
+                            .font(egui::TextStyle::Monospace)
+                            .code_editor(),
+                    );
                 });
 
                 ui.separator();
