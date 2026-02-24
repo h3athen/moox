@@ -23,7 +23,7 @@ impl Default for Moox {
 impl App for Moox {
     fn update(&mut self, ctx: &egui::Context, _frame: &mut Frame) {
         //// Set App font size
-        ctx.set_pixels_per_point(1.15);
+        ctx.set_pixels_per_point(1.2);
 
         apply_glass_theme(ctx);
 
