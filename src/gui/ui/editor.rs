@@ -11,7 +11,11 @@ pub fn build_editor(app: &mut Moox, ctx: &egui::Context) {
                 let gutter_digits = line_count.to_string().len().max(2);
                 let glyph_width = ui.fonts(|f| f.glyph_width(&font_id, '8'));
                 let col_width = (gutter_digits as f32 * glyph_width + 14.0).max(30.0);
-                let weak_text_color = ui.visuals().weak_text_color();
+                let gutter_text_color = if ui.visuals().dark_mode {
+                    ui.visuals().weak_text_color()
+                } else {
+                    egui::Color32::from_rgb(92, 98, 112)
+                };
 
                 ui.scope(|ui_nums| {
                     ui_nums.set_width(col_width);
@@ -21,7 +25,7 @@ pub fn build_editor(app: &mut Moox, ctx: &egui::Context) {
                             .desired_rows(35)
                             .frame(false)
                             .interactive(false)
-                            .text_color(weak_text_color)
+                            .text_color(gutter_text_color)
                             .font(egui::TextStyle::Monospace)
                             .code_editor(),
                     );

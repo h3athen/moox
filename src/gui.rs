@@ -39,7 +39,7 @@ impl Default for Moox {
 impl App for Moox {
     fn update(&mut self, ctx: &egui::Context, _frame: &mut Frame) {
         if !self.ui_initialized {
-            ctx.set_pixels_per_point(1.25);
+            ctx.set_pixels_per_point(1.27);
             apply_glass_theme(ctx);
             self.ui_initialized = true;
         }
@@ -67,63 +67,129 @@ impl App for Moox {
 }
 
 fn apply_glass_theme(ctx: &egui::Context) {
-    let mut style = (*ctx.style()).clone();
-    let visuals = &mut style.visuals;
+    ctx.style_mut_of(egui::Theme::Dark, |style| {
+        let visuals = &mut style.visuals;
+        visuals.dark_mode = true;
+        visuals.override_text_color = Some(egui::Color32::from_rgb(224, 224, 228));
 
-    visuals.dark_mode = true;
-    visuals.override_text_color = Some(egui::Color32::from_rgb(220, 226, 238));
+        visuals.panel_fill = egui::Color32::from_rgba_unmultiplied(18, 18, 20, 180);
+        visuals.window_fill = egui::Color32::from_rgba_unmultiplied(24, 24, 28, 198);
+        visuals.window_stroke = egui::Stroke::new(
+            1.0,
+            egui::Color32::from_rgba_unmultiplied(220, 220, 228, 90),
+        );
+        visuals.window_rounding = egui::Rounding::same(10.0);
+        visuals.window_shadow = egui::epaint::Shadow {
+            offset: egui::vec2(0.0, 4.0),
+            blur: 16.0,
+            spread: 1.0,
+            color: egui::Color32::from_black_alpha(120),
+        };
+        visuals.menu_rounding = egui::Rounding::same(8.0);
 
-    // Keep it minimal and translucent so native window transparency can show through.
-    visuals.panel_fill = egui::Color32::from_rgba_unmultiplied(8, 12, 20, 58);
-    visuals.window_fill = egui::Color32::from_rgba_unmultiplied(10, 14, 22, 70);
-    visuals.window_stroke = egui::Stroke::new(
-        1.0,
-        egui::Color32::from_rgba_unmultiplied(224, 234, 255, 90),
-    );
-    visuals.window_rounding = egui::Rounding::same(10.0);
-    visuals.window_shadow = egui::epaint::Shadow {
-        offset: egui::vec2(0.0, 4.0),
-        blur: 14.0,
-        spread: 1.0,
-        color: egui::Color32::from_black_alpha(80),
-    };
-    visuals.menu_rounding = egui::Rounding::same(8.0);
+        visuals.extreme_bg_color = egui::Color32::from_rgba_unmultiplied(18, 18, 22, 214);
+        visuals.faint_bg_color = egui::Color32::from_rgba_unmultiplied(96, 96, 104, 24);
+        visuals.code_bg_color = egui::Color32::from_rgba_unmultiplied(16, 16, 20, 206);
 
-    visuals.extreme_bg_color = egui::Color32::from_rgba_unmultiplied(7, 12, 24, 128);
-    visuals.faint_bg_color = egui::Color32::from_rgba_unmultiplied(90, 120, 185, 10);
-    visuals.code_bg_color = egui::Color32::from_rgba_unmultiplied(8, 14, 28, 112);
+        visuals.widgets.noninteractive.bg_fill =
+            egui::Color32::from_rgba_unmultiplied(38, 38, 44, 160);
+        visuals.widgets.noninteractive.bg_stroke = egui::Stroke::new(
+            1.0,
+            egui::Color32::from_rgba_unmultiplied(214, 214, 222, 72),
+        );
+        visuals.widgets.noninteractive.rounding = egui::Rounding::same(7.0);
 
-    visuals.widgets.noninteractive.bg_fill = egui::Color32::from_rgba_unmultiplied(20, 26, 40, 72);
-    visuals.widgets.noninteractive.bg_stroke = egui::Stroke::new(
-        1.0,
-        egui::Color32::from_rgba_unmultiplied(223, 234, 255, 72),
-    );
-    visuals.widgets.noninteractive.rounding = egui::Rounding::same(7.0);
+        visuals.widgets.inactive.weak_bg_fill =
+            egui::Color32::from_rgba_unmultiplied(48, 48, 56, 140);
+        visuals.widgets.inactive.bg_fill = egui::Color32::from_rgba_unmultiplied(58, 58, 66, 156);
+        visuals.widgets.inactive.bg_stroke = egui::Stroke::new(
+            1.0,
+            egui::Color32::from_rgba_unmultiplied(198, 198, 208, 74),
+        );
+        visuals.widgets.inactive.rounding = egui::Rounding::same(6.0);
 
-    visuals.widgets.inactive.weak_bg_fill = egui::Color32::from_rgba_unmultiplied(28, 38, 58, 70);
-    visuals.widgets.inactive.bg_fill = egui::Color32::from_rgba_unmultiplied(35, 46, 70, 82);
-    visuals.widgets.inactive.bg_stroke = egui::Stroke::new(
-        1.0,
-        egui::Color32::from_rgba_unmultiplied(205, 220, 255, 74),
-    );
-    visuals.widgets.inactive.rounding = egui::Rounding::same(6.0);
+        visuals.widgets.hovered.weak_bg_fill =
+            egui::Color32::from_rgba_unmultiplied(72, 72, 82, 168);
+        visuals.widgets.hovered.bg_fill = egui::Color32::from_rgba_unmultiplied(86, 86, 98, 188);
+        visuals.widgets.hovered.bg_stroke = egui::Stroke::new(
+            1.0,
+            egui::Color32::from_rgba_unmultiplied(220, 220, 228, 122),
+        );
 
-    visuals.widgets.hovered.weak_bg_fill = egui::Color32::from_rgba_unmultiplied(52, 68, 102, 95);
-    visuals.widgets.hovered.bg_fill = egui::Color32::from_rgba_unmultiplied(64, 84, 126, 120);
-    visuals.widgets.hovered.bg_stroke = egui::Stroke::new(
-        1.0,
-        egui::Color32::from_rgba_unmultiplied(220, 232, 255, 122),
-    );
+        visuals.widgets.active.weak_bg_fill =
+            egui::Color32::from_rgba_unmultiplied(92, 92, 106, 190);
+        visuals.widgets.active.bg_fill = egui::Color32::from_rgba_unmultiplied(110, 110, 124, 208);
+        visuals.widgets.active.bg_stroke = egui::Stroke::new(
+            1.0,
+            egui::Color32::from_rgba_unmultiplied(228, 228, 236, 150),
+        );
 
-    visuals.widgets.active.weak_bg_fill = egui::Color32::from_rgba_unmultiplied(66, 89, 132, 118);
-    visuals.widgets.active.bg_fill = egui::Color32::from_rgba_unmultiplied(82, 106, 154, 144);
-    visuals.widgets.active.bg_stroke = egui::Stroke::new(
-        1.0,
-        egui::Color32::from_rgba_unmultiplied(231, 240, 255, 150),
-    );
+        style.spacing.window_margin = egui::Margin::symmetric(12.0, 10.0);
+    });
 
-    style.spacing.window_margin = egui::Margin::symmetric(12.0, 10.0);
-    ctx.set_style(style);
+    ctx.style_mut_of(egui::Theme::Light, |style| {
+        let visuals = &mut style.visuals;
+        visuals.dark_mode = false;
+        visuals.override_text_color = Some(egui::Color32::from_rgb(36, 40, 48));
+
+        // Softer slate-gray light mode with stronger separation between layers.
+        visuals.panel_fill = egui::Color32::from_rgba_unmultiplied(226, 230, 238, 214);
+        visuals.window_fill = egui::Color32::from_rgba_unmultiplied(236, 240, 248, 224);
+        visuals.window_stroke = egui::Stroke::new(
+            1.0,
+            egui::Color32::from_rgba_unmultiplied(96, 104, 120, 116),
+        );
+        visuals.window_rounding = egui::Rounding::same(10.0);
+        visuals.window_shadow = egui::epaint::Shadow {
+            offset: egui::vec2(0.0, 4.0),
+            blur: 14.0,
+            spread: 1.0,
+            color: egui::Color32::from_black_alpha(54),
+        };
+        visuals.menu_rounding = egui::Rounding::same(8.0);
+
+        visuals.extreme_bg_color = egui::Color32::from_rgba_unmultiplied(246, 249, 255, 236);
+        visuals.faint_bg_color = egui::Color32::from_rgba_unmultiplied(104, 112, 128, 28);
+        visuals.code_bg_color = egui::Color32::from_rgba_unmultiplied(243, 247, 255, 236);
+
+        visuals.widgets.noninteractive.bg_fill =
+            egui::Color32::from_rgba_unmultiplied(220, 225, 236, 210);
+        visuals.widgets.noninteractive.bg_stroke = egui::Stroke::new(
+            1.0,
+            egui::Color32::from_rgba_unmultiplied(104, 112, 130, 96),
+        );
+        visuals.widgets.noninteractive.rounding = egui::Rounding::same(7.0);
+
+        visuals.widgets.inactive.weak_bg_fill =
+            egui::Color32::from_rgba_unmultiplied(210, 216, 230, 196);
+        visuals.widgets.inactive.bg_fill =
+            egui::Color32::from_rgba_unmultiplied(202, 209, 224, 208);
+        visuals.widgets.inactive.bg_stroke = egui::Stroke::new(
+            1.0,
+            egui::Color32::from_rgba_unmultiplied(96, 105, 124, 112),
+        );
+        visuals.widgets.inactive.rounding = egui::Rounding::same(6.0);
+
+        visuals.widgets.hovered.weak_bg_fill =
+            egui::Color32::from_rgba_unmultiplied(190, 198, 214, 214);
+        visuals.widgets.hovered.bg_fill =
+            egui::Color32::from_rgba_unmultiplied(182, 190, 208, 226);
+        visuals.widgets.hovered.bg_stroke = egui::Stroke::new(
+            1.0,
+            egui::Color32::from_rgba_unmultiplied(84, 94, 112, 136),
+        );
+
+        visuals.widgets.active.weak_bg_fill =
+            egui::Color32::from_rgba_unmultiplied(170, 180, 200, 226);
+        visuals.widgets.active.bg_fill =
+            egui::Color32::from_rgba_unmultiplied(160, 170, 192, 236);
+        visuals.widgets.active.bg_stroke = egui::Stroke::new(
+            1.0,
+            egui::Color32::from_rgba_unmultiplied(70, 82, 102, 150),
+        );
+
+        style.spacing.window_margin = egui::Margin::symmetric(12.0, 10.0);
+    });
 }
 
 impl Moox {
